@@ -282,6 +282,19 @@
 #define SENSOR_PORT_3V3()
 #endif
 
+// Set if you use another timer for motor control instead of TIM1.
+#ifndef HW_SWAP_MOTOR_TIMERS
+#define HW_MOTOR1_TIM TIM1
+#define HW_MOTOR1_TIM_RCC RCC_APB2Periph_TIM1
+#define HW_MOTOR2_TIM TIM8
+#define HW_MOTOR2_TIM_RCC RCC_APB2Periph_TIM8
+#else
+#define HW_MOTOR1_TIM TIM8
+#define HW_MOTOR1_TIM_RCC RCC_APB2Periph_TIM8
+#define HW_MOTOR2_TIM TIM1
+#define HW_MOTOR2_TIM_RCC RCC_APB2Periph_TIM1
+#endif
+
 // VCC net voltage
 #ifndef V_REG
 #define V_REG				3.3

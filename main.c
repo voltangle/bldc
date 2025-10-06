@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "hwconf/begode/hw_etmax.h"
+#include "hwconf/hw.h"
 #pragma GCC optimize ("Os")
 
 #include "ch.h"
@@ -364,19 +366,19 @@ int main(void) {
 }
 
 void main_stop_motor_and_reset(void) {
-	TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DRV8313
 		DISABLE_BR();

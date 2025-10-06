@@ -226,12 +226,12 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 	// Create current FIR filter
 	filter_create_fir_lowpass((float*)current_fir_coeffs, CURR_FIR_FCUT, CURR_FIR_TAPS_BITS, 1);
 
-	TIM_DeInit(TIM1);
-	TIM_DeInit(TIM8);
-	TIM1->CNT = 0;
-	TIM8->CNT = 0;
+	TIM_DeInit(HW_MOTOR1_TIM);
+	TIM_DeInit(HW_MOTOR2_TIM);
+	HW_MOTOR1_TIM->CNT = 0;
+	HW_MOTOR2_TIM->CNT = 0;
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+	RCC_APB2PeriphClockCmd(HW_MOTOR1_TIM_RCC, ENABLE);
 
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -239,13 +239,13 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 
-	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(HW_MOTOR1_TIM, &TIM_TimeBaseStructure);
 
 	// Channel 1, 2 and 3 Configuration in PWM mode
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
-	TIM_OCInitStructure.TIM_Pulse = TIM1->ARR / 2;
+	TIM_OCInitStructure.TIM_Pulse = HW_MOTOR1_TIM->ARR / 2;
 
 #ifndef INVERTED_TOP_DRIVER_INPUT
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; // gpio high = top fets on
@@ -261,15 +261,15 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 #endif
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCNIdleState_Set;
 
-	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC2Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC3Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC4Init(TIM1, &TIM_OCInitStructure);
+	TIM_OC1Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC2Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC3Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC4Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
 
-	TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC2PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC3PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC4PreloadConfig(TIM1, TIM_OCPreload_Enable);
+	TIM_OC1PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC2PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC3PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC4PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
 
 	// Automatic Output enable, Break, dead time and lock configuration
 	TIM_BDTRInitStructure.TIM_OSSRState = TIM_OSSRState_Enable;
@@ -280,9 +280,9 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 	TIM_BDTRInitStructure.TIM_BreakPolarity = TIM_BreakPolarity_High;
 	TIM_BDTRInitStructure.TIM_AutomaticOutput = TIM_AutomaticOutput_Disable;
 
-	TIM_BDTRConfig(TIM1, &TIM_BDTRInitStructure);
-	TIM_CCPreloadControl(TIM1, ENABLE);
-	TIM_ARRPreloadConfig(TIM1, ENABLE);
+	TIM_BDTRConfig(HW_MOTOR1_TIM, &TIM_BDTRInitStructure);
+	TIM_CCPreloadControl(HW_MOTOR1_TIM, ENABLE);
+	TIM_ARRPreloadConfig(HW_MOTOR1_TIM, ENABLE);
 
 	ADC_CommonInitTypeDef ADC_CommonInitStructure;
 	DMA_InitTypeDef DMA_InitStructure;
@@ -374,14 +374,14 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 	ADC_Cmd(ADC3, ENABLE);
 
 	// Timer8 for ADC sampling
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
+	RCC_APB2PeriphClockCmd(HW_MOTOR2_TIM_RCC, ENABLE);
 
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM8, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(HW_MOTOR2_TIM, &TIM_TimeBaseStructure);
 
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
@@ -390,37 +390,37 @@ void mcpwm_init(volatile mc_configuration *configuration) {
 	TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
 	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCNIdleState_Set;
-	TIM_OC1Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC1PreloadConfig(TIM8, TIM_OCPreload_Enable);
-	TIM_OC2Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC2PreloadConfig(TIM8, TIM_OCPreload_Enable);
-	TIM_OC3Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC3PreloadConfig(TIM8, TIM_OCPreload_Enable);
+	TIM_OC1Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC1PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
+	TIM_OC2Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC2PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
+	TIM_OC3Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC3PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
 
-	TIM_ARRPreloadConfig(TIM8, ENABLE);
-	TIM_CCPreloadControl(TIM8, ENABLE);
+	TIM_ARRPreloadConfig(HW_MOTOR2_TIM, ENABLE);
+	TIM_CCPreloadControl(HW_MOTOR2_TIM, ENABLE);
 
 	// PWM outputs have to be enabled in order to trigger ADC on CCx
-	TIM_CtrlPWMOutputs(TIM8, ENABLE);
+	TIM_CtrlPWMOutputs(HW_MOTOR2_TIM, ENABLE);
 
-	// TIM1 Master and TIM8 slave
-	TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Update);
-	TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);
-	TIM_SelectInputTrigger(TIM8, TIM_TS_ITR0);
-	TIM_SelectSlaveMode(TIM8, TIM_SlaveMode_Reset);
+	// HW_MOTOR1_TIM Master and HW_MOTOR2_TIM slave
+	TIM_SelectOutputTrigger(HW_MOTOR1_TIM, TIM_TRGOSource_Update);
+	TIM_SelectMasterSlaveMode(HW_MOTOR1_TIM, TIM_MasterSlaveMode_Enable);
+	TIM_SelectInputTrigger(HW_MOTOR2_TIM, TIM_TS_ITR0);
+	TIM_SelectSlaveMode(HW_MOTOR2_TIM, TIM_SlaveMode_Reset);
 
-	// Enable TIM1 and TIM8
-	TIM_Cmd(TIM1, ENABLE);
-	TIM_Cmd(TIM8, ENABLE);
+	// Enable HW_MOTOR1_TIM and HW_MOTOR2_TIM
+	TIM_Cmd(HW_MOTOR1_TIM, ENABLE);
+	TIM_Cmd(HW_MOTOR2_TIM, ENABLE);
 
 	// Main Output Enable
-	TIM_CtrlPWMOutputs(TIM1, ENABLE);
+	TIM_CtrlPWMOutputs(HW_MOTOR1_TIM, ENABLE);
 
 	// ADC sampling locations
 	stop_pwm_hw();
 	mc_timer_struct timer_tmp;
-	timer_tmp.top = TIM1->ARR;
-	timer_tmp.duty = TIM1->ARR / 2;
+	timer_tmp.top = HW_MOTOR1_TIM->ARR;
+	timer_tmp.duty = HW_MOTOR1_TIM->ARR / 2;
 	update_adc_sample_pos(&timer_tmp);
 	set_next_timer_settings(&timer_tmp);
 
@@ -465,8 +465,8 @@ void mcpwm_deinit(void) {
 		chThdSleepMilliseconds(1);
 	}
 
-	TIM_DeInit(TIM1);
-	TIM_DeInit(TIM8);
+	TIM_DeInit(HW_MOTOR1_TIM);
+	TIM_DeInit(HW_MOTOR2_TIM);
 	ADC_DeInit();
 	DMA_DeInit(DMA2_Stream4);
 	nvicDisableVector(ADC_IRQn);
@@ -912,19 +912,19 @@ static void stop_pwm_hw(void) {
 	DISABLE_BR();
 #endif
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 	set_switching_frequency(conf->m_bldc_f_sw_max);
 }
@@ -940,19 +940,19 @@ static void full_brake_hw(void) {
 	ENABLE_BR();
 #endif
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 	set_switching_frequency(conf->m_bldc_f_sw_max);
 }
@@ -1730,7 +1730,7 @@ void mcpwm_adc_inj_int_handler(void) {
 			comm_step = detect_step + 1;
 
 			set_next_comm_step(comm_step);
-			TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+			TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 		}
 	}
 
@@ -2616,7 +2616,7 @@ static void commutate(int steps) {
 		set_next_comm_step(comm_step);
 	}
 
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 	has_commutated = 1;
 
 	mc_timer_struct timer_tmp;
@@ -2648,26 +2648,26 @@ static void update_timer_attempt(void) {
 	utils_sys_lock_cnt();
 
 	// Set the next timer settings if an update is far enough away
-	if (!timer_struct.updated && TIM1->CNT > 10 && TIM1->CNT < (TIM1->ARR - 500)) {
+	if (!timer_struct.updated && HW_MOTOR1_TIM->CNT > 10 && TIM1->CNT < (TIM1->ARR - 500)) {
 		// Disable preload register updates
-		TIM1->CR1 |= TIM_CR1_UDIS;
-		TIM8->CR1 |= TIM_CR1_UDIS;
+		HW_MOTOR1_TIM->CR1 |= TIM_CR1_UDIS;
+		HW_MOTOR2_TIM->CR1 |= TIM_CR1_UDIS;
 
 		// Set the new configuration
-		TIM1->ARR = timer_struct.top;
-		TIM1->CCR1 = timer_struct.duty;
-		TIM1->CCR2 = timer_struct.duty;
-		TIM1->CCR3 = timer_struct.duty;
-		TIM8->CCR1 = timer_struct.val_sample;
-		TIM1->CCR4 = timer_struct.curr1_sample;
-		TIM8->CCR2 = timer_struct.curr2_sample;
+		HW_MOTOR1_TIM->ARR = timer_struct.top;
+		HW_MOTOR1_TIM->CCR1 = timer_struct.duty;
+		HW_MOTOR1_TIM->CCR2 = timer_struct.duty;
+		HW_MOTOR1_TIM->CCR3 = timer_struct.duty;
+		HW_MOTOR2_TIM->CCR1 = timer_struct.val_sample;
+		HW_MOTOR1_TIM->CCR4 = timer_struct.curr1_sample;
+		HW_MOTOR2_TIM->CCR2 = timer_struct.curr2_sample;
 #ifdef HW_HAS_3_SHUNTS
-		TIM8->CCR3 = timer_struct.curr3_sample;
+		HW_MOTOR2_TIM->CCR3 = timer_struct.curr3_sample;
 #endif
 
 		// Enables preload register updates
-		TIM1->CR1 &= ~TIM_CR1_UDIS;
-		TIM8->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR1_TIM->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR2_TIM->CR1 &= ~TIM_CR1_UDIS;
 		timer_struct.updated = true;
 	}
 
@@ -2690,30 +2690,30 @@ static void set_switching_frequency(float frequency) {
 static void set_next_comm_step(int next_step) {
 	if (conf->motor_type == MOTOR_TYPE_DC) {
 		// 0
-		TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_Inactive);
-		TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_Inactive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
 		if (direction) {
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_PWM1);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 		} else {
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_PWM1);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 		}
 
 		return;
@@ -2751,19 +2751,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR3();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR1();
@@ -2771,19 +2771,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR2();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_lowside);
 		}
 	} else if (next_step == 2) {
 		if (direction) {
@@ -2793,19 +2793,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR3();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR3();
@@ -2813,19 +2813,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR2();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_lowside);
 		}
 	} else if (next_step == 3) {
 		if (direction) {
@@ -2835,19 +2835,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR2();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR2();
@@ -2855,19 +2855,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR3();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_lowside);
 		}
 	} else if (next_step == 4) {
 		if (direction) {
@@ -2877,19 +2877,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR2();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR1();
@@ -2897,19 +2897,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR3();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, negative_lowside);
 		}
 	} else if (next_step == 5) {
 		if (direction) {
@@ -2919,19 +2919,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR1();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR3();
@@ -2939,19 +2939,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR1();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_lowside);
 		}
 	} else if (next_step == 6) {
 		if (direction) {
@@ -2961,19 +2961,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR1();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_lowside);
 		} else {
 #ifdef HW_HAS_DRV8313
 			DISABLE_BR2();
@@ -2981,19 +2981,19 @@ static void set_next_comm_step(int next_step) {
 			ENABLE_BR1();
 #endif
 			// 0
-			TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_Inactive);
-			TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-			TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_Inactive);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
 			// +
-			TIM_SelectOCxM(TIM1, TIM_Channel_3, positive_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_3, positive_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_3, positive_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, positive_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, positive_lowside);
 
 			// -
-			TIM_SelectOCxM(TIM1, TIM_Channel_1, negative_oc_mode);
-			TIM_CCxCmd(TIM1, TIM_Channel_1, negative_highside);
-			TIM_CCxNCmd(TIM1, TIM_Channel_1, negative_lowside);
+			TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, negative_oc_mode);
+			TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_highside);
+			TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, negative_lowside);
 		}
 	} else {
 #ifdef HW_HAS_DRV8313
@@ -3002,16 +3002,16 @@ static void set_next_comm_step(int next_step) {
 		DISABLE_BR3();
 #endif
 		// Invalid phase.. stop PWM!
-		TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 	}
 }

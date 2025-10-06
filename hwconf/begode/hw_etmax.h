@@ -28,7 +28,7 @@
 #define HW_HAS_PHASE_SHUNTS
 //#define HW_HAS_PHASE_FILTERS
 //#define INVERTED_SHUNT_POLARITY 
-#define HW_MOTOR_TIM TIM8
+#define HW_SWAP_MOTOR_TIMERS
 
 //#define HW_USE_BRK
 
@@ -124,6 +124,18 @@
 #define HW_ADC_EXT2_GPIO		GPIOA
 #define HW_ADC_EXT2_PIN			6
 
+// SPI pins
+#define HW_SPI_DEV              SPID2
+#define HW_SPI_GPIO_AF          GPIO_AF_SPI2
+#define HW_SPI_PORT_NSS         GPIOA
+#define HW_SPI_PIN_NSS          15 // WARNING: set to IMU Chip select
+#define HW_SPI_PORT_SCK         GPIOB
+#define HW_SPI_PIN_SCK          13
+#define HW_SPI_PORT_MOSI        GPIOC
+#define HW_SPI_PIN_MOSI         3
+#define HW_SPI_PORT_MISO        GPIOC
+#define HW_SPI_PIN_MISO         2
+
 // UART Peripheral
 #define HW_UART_DEV				SD3
 #define HW_UART_GPIO_AF			GPIO_AF_USART3
@@ -158,15 +170,14 @@
 #define HW_ENC_TIM_ISR_CH		TIM4_IRQn
 #define HW_ENC_TIM_ISR_VEC		TIM4_IRQHandler
 
-// ICU Peripheral for servo decoding
-#define HW_USE_SERVO_TIM4
-#define HW_ICU_TIMER			TIM5
-#define HW_ICU_TIM_CLK_EN()		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE)
-#define HW_ICU_DEV				ICUD5
-#define HW_ICU_CHANNEL			ICU_CHANNEL_2
-#define HW_ICU_GPIO_AF			GPIO_AF_TIM5
+// ICU Peripheral for servo decoding (NOT SUPPORTED - random unused pin set)
+#define HW_ICU_TIMER			TIM9
+#define HW_ICU_TIM_CLK_EN()		RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM9, ENABLE)
+#define HW_ICU_DEV				ICUD9
+#define HW_ICU_CHANNEL			ICU_CHANNEL_1
+#define HW_ICU_GPIO_AF			GPIO_AF_TIM9
 #define HW_ICU_GPIO				GPIOA
-#define HW_ICU_PIN				1
+#define HW_ICU_PIN				2
 
 // TODO: Set up IMU (MPU6500)
 

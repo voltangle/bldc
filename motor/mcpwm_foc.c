@@ -78,49 +78,49 @@ static volatile bool pid_thd_stop;
 // Macros
 #ifdef HW_HAS_3_SHUNTS
 #define TIMER_UPDATE_DUTY_M1(duty1, duty2, duty3) \
-		TIM1->CR1 |= TIM_CR1_UDIS; \
-		TIM1->CCR1 = duty1; \
-		TIM1->CCR2 = duty2; \
-		TIM1->CCR3 = duty3; \
-		TIM1->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR1_TIM->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR1_TIM->CCR1 = duty1; \
+		HW_MOTOR1_TIM->CCR2 = duty2; \
+		HW_MOTOR1_TIM->CCR3 = duty3; \
+		HW_MOTOR1_TIM->CR1 &= ~TIM_CR1_UDIS;
 
 #define TIMER_UPDATE_DUTY_M2(duty1, duty2, duty3) \
-		TIM8->CR1 |= TIM_CR1_UDIS; \
-		TIM8->CCR1 = duty1; \
-		TIM8->CCR2 = duty2; \
-		TIM8->CCR3 = duty3; \
-		TIM8->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR2_TIM->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR2_TIM->CCR1 = duty1; \
+		HW_MOTOR2_TIM->CCR2 = duty2; \
+		HW_MOTOR2_TIM->CCR3 = duty3; \
+		HW_MOTOR2_TIM->CR1 &= ~TIM_CR1_UDIS;
 #else
 #define TIMER_UPDATE_DUTY_M1(duty1, duty2, duty3) \
-		TIM1->CR1 |= TIM_CR1_UDIS; \
-		TIM1->CCR1 = duty1; \
-		TIM1->CCR2 = duty3; \
-		TIM1->CCR3 = duty2; \
-		TIM1->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR1_TIM->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR1_TIM->CCR1 = duty1; \
+		HW_MOTOR1_TIM->CCR2 = duty3; \
+		HW_MOTOR1_TIM->CCR3 = duty2; \
+		HW_MOTOR1_TIM->CR1 &= ~TIM_CR1_UDIS;
 #define TIMER_UPDATE_DUTY_M2(duty1, duty2, duty3) \
-		TIM8->CR1 |= TIM_CR1_UDIS; \
-		TIM8->CCR1 = duty1; \
-		TIM8->CCR2 = duty3; \
-		TIM8->CCR3 = duty2; \
-		TIM8->CR1 &= ~TIM_CR1_UDIS;
+		HW_MOTOR2_TIM->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR2_TIM->CCR1 = duty1; \
+		HW_MOTOR2_TIM->CCR2 = duty3; \
+		HW_MOTOR2_TIM->CCR3 = duty2; \
+		HW_MOTOR2_TIM->CR1 &= ~TIM_CR1_UDIS;
 #endif
 
 #define TIMER_UPDATE_SAMP(samp) \
 		TIM2->CCR2 = (samp / 2);
 
 #define TIMER_UPDATE_SAMP_TOP_M1(samp, top) \
-		TIM1->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR1_TIM->CR1 |= TIM_CR1_UDIS; \
 		TIM2->CR1 |= TIM_CR1_UDIS; \
-		TIM1->ARR = top; \
+		HW_MOTOR1_TIM->ARR = top; \
 		TIM2->CCR2 = samp / 2; \
-		TIM1->CR1 &= ~TIM_CR1_UDIS; \
+		HW_MOTOR1_TIM->CR1 &= ~TIM_CR1_UDIS; \
 		TIM2->CR1 &= ~TIM_CR1_UDIS;
 #define TIMER_UPDATE_SAMP_TOP_M2(samp, top) \
-		TIM8->CR1 |= TIM_CR1_UDIS; \
+		HW_MOTOR2_TIM->CR1 |= TIM_CR1_UDIS; \
 		TIM2->CR1 |= TIM_CR1_UDIS; \
-		TIM8->ARR = top; \
+		HW_MOTOR2_TIM->ARR = top; \
 		TIM2->CCR2 = samp / 2; \
-		TIM8->CR1 &= ~TIM_CR1_UDIS; \
+		HW_MOTOR2_TIM->CR1 &= ~TIM_CR1_UDIS; \
 		TIM2->CR1 &= ~TIM_CR1_UDIS;
 
 // #define M_MOTOR: For single motor compilation, expands to &m_motor_1.
@@ -170,20 +170,20 @@ static void update_hfi_samples(foc_hfi_samples samples, volatile motor_all_state
 static void timer_reinit(int f_zv) {
 	utils_sys_lock_cnt();
 
-	TIM_DeInit(TIM1);
-	TIM_DeInit(TIM8);
+	TIM_DeInit(HW_MOTOR1_TIM);
+	TIM_DeInit(HW_MOTOR2_TIM);
 	TIM_DeInit(TIM2);
 
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef TIM_OCInitStructure;
 	TIM_BDTRInitTypeDef TIM_BDTRInitStructure;
 
-	TIM1->CNT = 0;
+	HW_MOTOR1_TIM->CNT = 0;
 	TIM2->CNT = 0;
-	TIM8->CNT = 0;
+	HW_MOTOR2_TIM->CNT = 0;
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
+	RCC_APB2PeriphClockCmd(HW_MOTOR1_TIM_RCC, ENABLE);
+	RCC_APB2PeriphClockCmd(HW_MOTOR2_TIM_RCC, ENABLE);
 
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_CenterAligned1;
@@ -191,13 +191,13 @@ static void timer_reinit(int f_zv) {
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 
-	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
-	TIM_TimeBaseInit(TIM8, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(HW_MOTOR1_TIM, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(HW_MOTOR2_TIM, &TIM_TimeBaseStructure);
 
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
-	TIM_OCInitStructure.TIM_Pulse = TIM1->ARR / 2;
+	TIM_OCInitStructure.TIM_Pulse = HW_MOTOR1_TIM->ARR / 2;
 
 #ifndef INVERTED_TOP_DRIVER_INPUT
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; // gpio high = top fets on
@@ -213,25 +213,25 @@ static void timer_reinit(int f_zv) {
 #endif
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCNIdleState_Set;
 
-	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC2Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC3Init(TIM1, &TIM_OCInitStructure);
-	TIM_OC4Init(TIM1, &TIM_OCInitStructure);
+	TIM_OC1Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC2Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC3Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
+	TIM_OC4Init(HW_MOTOR1_TIM, &TIM_OCInitStructure);
 
-	TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC2PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC3PreloadConfig(TIM1, TIM_OCPreload_Enable);
-	TIM_OC4PreloadConfig(TIM1, TIM_OCPreload_Enable);
+	TIM_OC1PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC2PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC3PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
+	TIM_OC4PreloadConfig(HW_MOTOR1_TIM, TIM_OCPreload_Enable);
 
-	TIM_OC1Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC2Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC3Init(TIM8, &TIM_OCInitStructure);
-	TIM_OC4Init(TIM8, &TIM_OCInitStructure);
+	TIM_OC1Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC2Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC3Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
+	TIM_OC4Init(HW_MOTOR2_TIM, &TIM_OCInitStructure);
 
-	TIM_OC1PreloadConfig(TIM8, TIM_OCPreload_Enable);
-	TIM_OC2PreloadConfig(TIM8, TIM_OCPreload_Enable);
-	TIM_OC3PreloadConfig(TIM8, TIM_OCPreload_Enable);
-	TIM_OC4PreloadConfig(TIM8, TIM_OCPreload_Enable);
+	TIM_OC1PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
+	TIM_OC2PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
+	TIM_OC3PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
+	TIM_OC4PreloadConfig(HW_MOTOR2_TIM, TIM_OCPreload_Enable);
 
 	// Automatic Output enable, Break, dead time and lock configuration
 	TIM_BDTRInitStructure.TIM_OSSRState = TIM_OSSRState_Enable;
@@ -260,13 +260,13 @@ static void timer_reinit(int f_zv) {
 	#endif
 #endif
 
-	TIM_BDTRConfig(TIM1, &TIM_BDTRInitStructure);
-	TIM_CCPreloadControl(TIM1, ENABLE);
-	TIM_ARRPreloadConfig(TIM1, ENABLE);
+	TIM_BDTRConfig(HW_MOTOR1_TIM, &TIM_BDTRInitStructure);
+	TIM_CCPreloadControl(HW_MOTOR1_TIM, ENABLE);
+	TIM_ARRPreloadConfig(HW_MOTOR1_TIM, ENABLE);
 
-	TIM_BDTRConfig(TIM8, &TIM_BDTRInitStructure);
-	TIM_CCPreloadControl(TIM8, ENABLE);
-	TIM_ARRPreloadConfig(TIM8, ENABLE);
+	TIM_BDTRConfig(HW_MOTOR2_TIM, &TIM_BDTRInitStructure);
+	TIM_CCPreloadControl(HW_MOTOR2_TIM, ENABLE);
+	TIM_ARRPreloadConfig(HW_MOTOR2_TIM, ENABLE);
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
@@ -299,28 +299,28 @@ static void timer_reinit(int f_zv) {
 
 #if defined HW_HAS_DUAL_MOTORS || defined HW_HAS_DUAL_PARALLEL
 	// See: https://www.cnblogs.com/shangdawei/p/4758988.html
-	TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Enable);
-	TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);
-	TIM_SelectInputTrigger(TIM8, TIM_TS_ITR0);
-	TIM_SelectSlaveMode(TIM8, TIM_SlaveMode_Trigger);
-	TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Enable);
-	TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Update);
+	TIM_SelectOutputTrigger(HW_MOTOR1_TIM, TIM_TRGOSource_Enable);
+	TIM_SelectMasterSlaveMode(HW_MOTOR1_TIM, TIM_MasterSlaveMode_Enable);
+	TIM_SelectInputTrigger(HW_MOTOR2_TIM, TIM_TS_ITR0);
+	TIM_SelectSlaveMode(HW_MOTOR2_TIM, TIM_SlaveMode_Trigger);
+	TIM_SelectOutputTrigger(HW_MOTOR2_TIM, TIM_TRGOSource_Enable);
+	TIM_SelectOutputTrigger(HW_MOTOR2_TIM, TIM_TRGOSource_Update);
 	TIM_SelectInputTrigger(TIM2, TIM_TS_ITR1);
 	TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_Reset);
 #else
-	TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Update);
-	TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);
+	TIM_SelectOutputTrigger(HW_MOTOR1_TIM, TIM_TRGOSource_Update);
+	TIM_SelectMasterSlaveMode(HW_MOTOR1_TIM, TIM_MasterSlaveMode_Enable);
 	TIM_SelectInputTrigger(TIM2, TIM_TS_ITR0);
 	TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_Reset);
 #endif
 
 #ifdef HW_HAS_DUAL_MOTORS
-	TIM8->CNT = TIM1->ARR;
+	HW_MOTOR2_TIM->CNT = HW_MOTOR1_TIM->ARR;
 #else
-	TIM8->CNT = 0;
+	HW_MOTOR2_TIM->CNT = 0;
 #endif
-	TIM1->CNT = 0;
-	TIM_Cmd(TIM1, ENABLE);
+	HW_MOTOR1_TIM->CNT = 0;
+	TIM_Cmd(HW_MOTOR1_TIM, ENABLE);
 	TIM_Cmd(TIM2, ENABLE);
 
 	// Prevent all low side FETs from switching on
@@ -329,8 +329,8 @@ static void timer_reinit(int f_zv) {
 	stop_pwm_hw((motor_all_state_t*)&m_motor_2);
 #endif
 
-	TIM_CtrlPWMOutputs(TIM1, ENABLE);
-	TIM_CtrlPWMOutputs(TIM8, ENABLE);
+	TIM_CtrlPWMOutputs(HW_MOTOR1_TIM, ENABLE);
+	TIM_CtrlPWMOutputs(HW_MOTOR2_TIM, ENABLE);
 
 	TIMER_UPDATE_SAMP(MCPWM_FOC_CURRENT_SAMP_OFFSET);
 
@@ -391,13 +391,13 @@ void mcpwm_foc_init(mc_configuration *conf_m1, mc_configuration *conf_m2) {
 
 	virtual_motor_init(conf_m1);
 
-	TIM_DeInit(TIM1);
+	TIM_DeInit(HW_MOTOR1_TIM);
 	TIM_DeInit(TIM2);
-	TIM_DeInit(TIM8);
+	TIM_DeInit(HW_MOTOR2_TIM);
 
-	TIM1->CNT = 0;
+	HW_MOTOR1_TIM->CNT = 0;
 	TIM2->CNT = 0;
-	TIM8->CNT = 0;
+	HW_MOTOR2_TIM->CNT = 0;
 
 	ADC_CommonInitTypeDef ADC_CommonInitStructure;
 	DMA_InitTypeDef DMA_InitStructure;
@@ -615,9 +615,9 @@ void mcpwm_foc_deinit(void) {
 		chThdSleepMilliseconds(1);
 	}
 
-	TIM_DeInit(TIM1);
+	TIM_DeInit(HW_MOTOR1_TIM);
 	TIM_DeInit(TIM2);
-	TIM_DeInit(TIM8);
+	TIM_DeInit(HW_MOTOR2_TIM);
 	ADC_DeInit();
 	DMA_DeInit(DMA2_Stream4);
 	nvicDisableVector(ADC_IRQn);
@@ -643,7 +643,7 @@ void mcpwm_foc_set_configuration(mc_configuration *configuration) {
 	// Below we check if anything in the configuration changed that requires stopping the motor.
 
 	uint32_t top = SYSTEM_CORE_CLOCK / (int)configuration->foc_f_zv;
-	if (TIM1->ARR != top) {
+	if (HW_MOTOR1_TIM->ARR != top) {
 #ifdef HW_HAS_DUAL_MOTORS
 		m_motor_1.m_control_mode = CONTROL_MODE_NONE;
 		m_motor_1.m_state = MC_STATE_OFF;
@@ -2504,27 +2504,27 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	float current_sum[3] = {0.0, 0.0, 0.0};
 	float voltage_sum[3] = {0.0, 0.0, 0.0};
 
-	TIMER_UPDATE_DUTY_M1(TIM1->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
+	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
 
 	// Start PWM on phase 1
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
 	PHASE_FILTER_ON();
-	TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DUAL_MOTORS
 	float current_sum_m2[3] = {0.0, 0.0, 0.0};
 	float voltage_sum_m2[3] = {0.0, 0.0, 0.0};
-	TIMER_UPDATE_DUTY_M2(TIM8->ARR / 2, TIM8->ARR / 2, TIM8->ARR / 2);
+	TIMER_UPDATE_DUTY_M2(HW_MOTOR2_TIM->ARR / 2, TIM8->ARR / 2, TIM8->ARR / 2);
 
 	stop_pwm_hw((motor_all_state_t*)&m_motor_2);
 	PHASE_FILTER_ON_M2();
-	TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 #endif
 
 	chThdSleep(1);
@@ -2542,18 +2542,18 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	// Start PWM on phase 2
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
 	PHASE_FILTER_ON();
-	TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DUAL_MOTORS
 	stop_pwm_hw((motor_all_state_t*)&m_motor_2);
 	PHASE_FILTER_ON_M2();
-	TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 #endif
 
 	chThdSleep(1);
@@ -2571,18 +2571,18 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	// Start PWM on phase 3
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
 	PHASE_FILTER_ON();
-	TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DUAL_MOTORS
 	stop_pwm_hw((motor_all_state_t*)&m_motor_2);
 	PHASE_FILTER_ON_M2();
-	TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Enable);
-	TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Enable);
+	TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 #endif
 
 	chThdSleep(1);
@@ -2713,25 +2713,25 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	float current_sum[3] = {0.0, 0.0, 0.0};
 	float voltage_sum[3] = {0.0, 0.0, 0.0};
 
-	TIMER_UPDATE_DUTY_M1(TIM1->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
+	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
 
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
 	PHASE_FILTER_ON();
 	
 	// Start PWM on all phases at 50% to get a V0 measurement
-	TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-	TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_PWM1);
-	TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+	TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+	TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 		
-	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 	chThdSleep(1);	
 
@@ -2834,8 +2834,8 @@ float mcpwm_foc_get_last_adc_isr_duration(void) {
 void mcpwm_foc_tim_sample_int_handler(void) {
 	if (m_init_done) {
 		// Generate COM event here for synchronization
-		TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
-		TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 
 		virtual_motor_int_handler(
 				m_motor_1.m_motor_state.v_alpha,
@@ -2849,7 +2849,7 @@ void mcpwm_foc_adc_int_handler(void *p, uint32_t flags) {
 
 	uint32_t t_start = timer_time_now();
 
-	bool is_v7 = !(TIM1->CR1 & TIM_CR1_DIR);
+	bool is_v7 = !(HW_MOTOR1_TIM->CR1 & TIM_CR1_DIR);
 	bool is_second_motor = false;
 	int norm_curr_ofs = 0;
 
@@ -2861,14 +2861,14 @@ void mcpwm_foc_adc_int_handler(void *p, uint32_t flags) {
 	motor_all_state_t *motor_other = is_second_motor ? (motor_all_state_t*)&m_motor_1 : (motor_all_state_t*)&m_motor_2;
 	m_isr_motor = is_second_motor ? 2 : 1;
 #ifdef HW_HAS_3_SHUNTS
-	volatile TIM_TypeDef *tim = is_second_motor ? TIM8 : TIM1;
+	volatile TIM_TypeDef *tim = is_second_motor ? HW_MOTOR2_TIM : HW_MOTOR1_TIM;
 #endif
 #else
 	motor_all_state_t *motor_other = (motor_all_state_t*)&m_motor_1;
 	motor_all_state_t *motor_now = (motor_all_state_t*)&m_motor_1;;
 	m_isr_motor = 1;
 #ifdef HW_HAS_3_SHUNTS
-	volatile TIM_TypeDef *tim = TIM1;
+	volatile TIM_TypeDef *tim = HW_MOTOR1_TIM;
 #endif
 #endif
 
@@ -2947,7 +2947,7 @@ void mcpwm_foc_adc_int_handler(void *p, uint32_t flags) {
 		state_m->mod_beta_raw  = c * state_m->mod_q + s * state_m->mod_d;
 
 		uint32_t duty1, duty2, duty3, top;
-		top = TIM1->ARR;
+		top = HW_MOTOR1_TIM->ARR;
 		foc_svm(state_m->mod_alpha_raw, state_m->mod_beta_raw, conf_now->l_max_duty,
 				top, &duty1, &duty2, &duty3, (uint32_t*)&state_m->svm_sector);
 
@@ -4889,7 +4889,7 @@ static void control_current(motor_all_state_t *motor, float dt) {
 			// itself with the opposite pulse from the previous HFI sample. This makes more sense
 			// when drawing the SVM waveform.
 			foc_svm(mod_alpha_v7, mod_beta_v7,
-					conf_now->l_max_duty, TIM1->ARR,
+					conf_now->l_max_duty, HW_MOTOR1_TIM->ARR,
 					(uint32_t*)&motor->m_duty1_next,
 					(uint32_t*)&motor->m_duty2_next,
 					(uint32_t*)&motor->m_duty3_next,
@@ -4916,7 +4916,7 @@ static void control_current(motor_all_state_t *motor, float dt) {
 
 	// Set output (HW Dependent)
 	uint32_t duty1, duty2, duty3, top;
-	top = TIM1->ARR;
+	top = HW_MOTOR1_TIM->ARR;
 
 	// Calculate the duty cycles for all the phases. This also injects a zero modulation signal to
 	// be able to fully utilize the bus voltage. See https://microchipdeveloper.com/mct5001:start
@@ -5112,34 +5112,34 @@ static void stop_pwm_hw(motor_all_state_t *motor) {
 	motor->m_iq_set = 0.0;
 
 	if (motor == &m_motor_1) {
-		TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-		TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DUAL_PARALLEL
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-		TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 #endif
 
 #ifdef HW_HAS_DRV8313
@@ -5147,19 +5147,19 @@ static void stop_pwm_hw(motor_all_state_t *motor) {
 #endif
 		PHASE_FILTER_OFF();
 	} else {
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Disable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-		TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DRV8313_2
 		DISABLE_BR_2();
@@ -5173,30 +5173,30 @@ static void stop_pwm_hw(motor_all_state_t *motor) {
 
 static void start_pwm_hw(motor_all_state_t *motor) {
 	if (motor == &m_motor_1) {
-		TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
 #ifdef HW_HAS_DUAL_PARALLEL
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
 		PHASE_FILTER_ON_M2();
 
@@ -5206,24 +5206,24 @@ static void start_pwm_hw(motor_all_state_t *motor) {
 #endif
 
 		// Generate COM event in ADC interrupt to get better synchronization
-		//	TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+		//	TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DRV8313
 		ENABLE_BR();
 #endif
 		PHASE_FILTER_ON();
 	} else {
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_OCMode_PWM1);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_OCMode_PWM1);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
 #ifdef HW_HAS_DRV8313_2
 		ENABLE_BR_2();
@@ -5236,19 +5236,19 @@ static void start_pwm_hw(motor_all_state_t *motor) {
 
 static void full_brake_hw(motor_all_state_t *motor) {
 	if (motor == &m_motor_1) {
-		TIM_SelectOCxM(TIM1, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM1, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM1, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM1, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR1_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR1_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
-		TIM_GenerateEvent(TIM1, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR1_TIM, TIM_EventSource_COM);
 		PHASE_FILTER_ON();
 
 #ifdef HW_HAS_DRV8313
@@ -5256,19 +5256,19 @@ static void full_brake_hw(motor_all_state_t *motor) {
 #endif
 
 #ifdef HW_HAS_DUAL_PARALLEL
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
-		TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 		PHASE_FILTER_ON_M2();
 
 #ifdef HW_HAS_DRV8313_2
@@ -5276,19 +5276,19 @@ static void full_brake_hw(motor_all_state_t *motor) {
 #endif
 #endif
 	} else {
-		TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Enable);
 
-		TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_ForcedAction_InActive);
-		TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-		TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Enable);
+		TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+		TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+		TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Enable);
 
-		TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+		TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 		PHASE_FILTER_ON_M2();
 
 #ifdef HW_HAS_DRV8313_2
