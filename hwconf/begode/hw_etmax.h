@@ -36,7 +36,7 @@
 #define LED_GREEN_GPIO			GPIOC
 #define LED_GREEN_PIN			9
 #define LED_RED_GPIO			GPIOB
-#define LED_RED_PIN				2
+#define LED_RED_PIN				12
 
 #define LED_GREEN_ON()			palSetPad(LED_GREEN_GPIO, LED_GREEN_PIN)
 #define LED_GREEN_OFF()			palClearPad(LED_GREEN_GPIO, LED_GREEN_PIN)
@@ -57,30 +57,34 @@
 //#define AUX_OFF()				palClearPad(AUX_GPIO, AUX_PIN) 
 
 
-#define HW_ADC_CHANNELS			18
-#define HW_ADC_INJ_CHANNELS		3
-#define HW_ADC_NBR_CONV			6
+#define HW_ADC_CHANNELS			8
+#define HW_ADC_INJ_CHANNELS		2
+#define HW_ADC_NBR_CONV			3
 
 // ADC Indexes
-#define ADC_IND_CURR1			0   //PC10
-#define ADC_IND_CURR2			1   //PC11
-#define ADC_IND_CURR3			2   //PC12
+// Check out the accompanying .c file for index definitions
+#define ADC_IND_CURR1			0
+#define ADC_IND_CURR2			1
 
-#define ADC_IND_SENS1			3   //PA0
-#define ADC_IND_SENS2			4   //PA1
-#define ADC_IND_SENS3			5   //PA2
-#define ADC_IND_VIN_SENS		8   //PC13
+// all are sensing battery aka input voltage, as the board doesn't have phase voltage
+// sensing
+#define ADC_IND_SENS1			3
+#define ADC_IND_SENS2			3
+#define ADC_IND_SENS3			3
+#define ADC_IND_VIN_SENS		3
 
-#define ADC_IND_EXT				11   //PA3
-#define ADC_IND_EXT2			13   //PA4
-#define ADC_IND_EXT3			9   //PA7
+// random unused pin
+#define ADC_IND_EXT				2
+#define ADC_IND_EXT2			2
+#define ADC_IND_EXT3			2
 
-#define ADC_IND_TEMP_MOS		10   //PC4      
-#define ADC_IND_TEMP_MOS_2		12   //PC5          
-#define ADC_IND_TEMP_MOS_3		10   //Only 2 sensors
-#define ADC_IND_TEMP_MOTOR		16   //PB1
+// only one temperature sensor in the whole system
+#define ADC_IND_TEMP_MOS		7  
+#define ADC_IND_TEMP_MOS_2		7     
+#define ADC_IND_TEMP_MOS_3		7
+#define ADC_IND_TEMP_MOTOR		7
 
-#define ADC_IND_VREFINT			15   //Must be ADC1//WHY DO WE NEED THIS???
+#define ADC_IND_VREFINT			6   //Must be ADC1//WHY DO WE NEED THIS???
 
 // ADC macros and settings
 
@@ -95,8 +99,9 @@
 #define VIN_R2					2700.0
 #endif
 #ifndef CURRENT_AMP_GAIN
-#define CURRENT_AMP_GAIN		(1.35/750)
-//Isolated current ring sensors for 750A, experiment shows 1.35V/750A
+#define CURRENT_AMP_GAIN		(1.32/350)
+// Dual 0.3 mOhm shunts in parallel with CC6920BSO-50A, calculations show that this
+// is what its supposed to show
 
 #endif
 #ifndef CURRENT_SHUNT_RES
@@ -120,9 +125,9 @@
 
 // COMM-port ADC GPIOs
 #define HW_ADC_EXT_GPIO			GPIOA
-#define HW_ADC_EXT_PIN			5
+#define HW_ADC_EXT_PIN			3
 #define HW_ADC_EXT2_GPIO		GPIOA
-#define HW_ADC_EXT2_PIN			6
+#define HW_ADC_EXT2_PIN			3
 
 // SPI pins
 #define HW_SPI_DEV              SPID2

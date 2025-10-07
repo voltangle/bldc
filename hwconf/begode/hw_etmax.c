@@ -113,40 +113,31 @@ void hw_init_gpio(void) {
 }
 
 void hw_setup_adc_channels(void) {
+	uint8_t t_samp = ADC_SampleTime_15Cycles;
 	// ADC1 regular channels
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_15Cycles); //0 //Current1 FIXED
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 2, ADC_SampleTime_15Cycles);  //3 //Phase1V FIXED
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 3, ADC_SampleTime_15Cycles); //6 //SCK
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 4, ADC_SampleTime_15Cycles);  //9 //Ext3
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_15, 5, ADC_SampleTime_15Cycles); //12 //MOS2
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_Vrefint, 6, ADC_SampleTime_15Cycles);  //15 //WHY DO WE NEED THIS??? WANT TO SWAP TO PA4 ADC
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, t_samp); // (0) Phase A current
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 2, t_samp); // (3) Input voltage
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_Vrefint, 3, t_samp); // (6) Vrefint
 
 	// ADC2 regular channels
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_11, 1, ADC_SampleTime_15Cycles); //1 //Current2 FIXED
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_1, 2, ADC_SampleTime_15Cycles);  //4 //Phase2V FIXED
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_6, 3, ADC_SampleTime_15Cycles);  //7 //MISO
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_14, 4, ADC_SampleTime_15Cycles); //10//MOS1
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_4, 5, ADC_SampleTime_15Cycles);  //13//PA4 EXT2
-	ADC_RegularChannelConfig(ADC2, ADC_Channel_9, 6, ADC_SampleTime_15Cycles);  //16 //MotorT
+	ADC_RegularChannelConfig(ADC2, ADC_Channel_5, 1, t_samp); // (1) Phase C current
+    ADC_RegularChannelConfig(ADC2, ADC_Channel_0, 2, t_samp); // (4) Input voltage
+    ADC_RegularChannelConfig(ADC2, ADC_Channel_11, 3, t_samp); // (7) MOSFET temperature
 
 	// ADC3 regular channels //NOTE ADC3 HAS FEWER CHANNELS!
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_12, 1, ADC_SampleTime_15Cycles); //2     //Current3FIXED
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_2, 2, ADC_SampleTime_15Cycles);  //5     //Phase3V FIXED
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_13, 3, ADC_SampleTime_15Cycles); //8     //BUSV FIXED
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_3, 4, ADC_SampleTime_15Cycles);  //11    //PA3 EXT1 FIXED
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_11, 5, ADC_SampleTime_15Cycles); //14    //Double current
-	ADC_RegularChannelConfig(ADC3, ADC_Channel_12, 6, ADC_SampleTime_15Cycles); //17    //Double current
+    // NOTE: This channel is not connected to anything physically, essentially
+    // random values there
+	ADC_RegularChannelConfig(ADC3, ADC_Channel_3, 1, t_samp); // (2) Stub
+	ADC_RegularChannelConfig(ADC3, ADC_Channel_10, 2, t_samp); // (5) Input current
+	ADC_RegularChannelConfig(ADC3, ADC_Channel_11, 3, t_samp); // (8) MOSFET temp (duplicate)
 
 	// Injected channels
-	ADC_InjectedChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC2, ADC_Channel_11, 1, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC3, ADC_Channel_12, 1, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC1, ADC_Channel_10, 2, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC2, ADC_Channel_11, 2, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC3, ADC_Channel_12, 2, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC1, ADC_Channel_10, 3, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC2, ADC_Channel_11, 3, ADC_SampleTime_15Cycles);
-	ADC_InjectedChannelConfig(ADC3, ADC_Channel_12, 3, ADC_SampleTime_15Cycles);
+	ADC_InjectedChannelConfig(ADC1, ADC_Channel_4, 1, t_samp);
+	ADC_InjectedChannelConfig(ADC2, ADC_Channel_5, 1, t_samp);
+	ADC_InjectedChannelConfig(ADC1, ADC_Channel_4, 2, t_samp);
+	ADC_InjectedChannelConfig(ADC2, ADC_Channel_5, 2, t_samp);
+	ADC_InjectedChannelConfig(ADC1, ADC_Channel_4, 3, t_samp);
+	ADC_InjectedChannelConfig(ADC2, ADC_Channel_5, 3, t_samp);
 }
 
 void hw_start_i2c(void) {
