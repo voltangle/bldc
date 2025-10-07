@@ -99,13 +99,14 @@
 #define VIN_R2					2700.0
 #endif
 #ifndef CURRENT_AMP_GAIN
-#define CURRENT_AMP_GAIN		(1.32/350)
+#define CURRENT_AMP_GAIN		(10.55)
 // Dual 0.3 mOhm shunts in parallel with CC6920BSO-50A, calculations show that this
 // is what its supposed to show
-
 #endif
+
+// Max value the shunt can differentiate is ~350A
 #ifndef CURRENT_SHUNT_RES
-#define CURRENT_SHUNT_RES		(1.0) 
+#define CURRENT_SHUNT_RES		(0.0003) 
 #endif
 
 // Input voltage
