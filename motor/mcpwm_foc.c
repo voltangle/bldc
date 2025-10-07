@@ -2504,7 +2504,7 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	float current_sum[3] = {0.0, 0.0, 0.0};
 	float voltage_sum[3] = {0.0, 0.0, 0.0};
 
-	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
+	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, HW_MOTOR1_TIM->ARR / 2, HW_MOTOR1_TIM->ARR / 2);
 
 	// Start PWM on phase 1
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
@@ -2517,7 +2517,7 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 #ifdef HW_HAS_DUAL_MOTORS
 	float current_sum_m2[3] = {0.0, 0.0, 0.0};
 	float voltage_sum_m2[3] = {0.0, 0.0, 0.0};
-	TIMER_UPDATE_DUTY_M2(HW_MOTOR2_TIM->ARR / 2, TIM8->ARR / 2, TIM8->ARR / 2);
+	TIMER_UPDATE_DUTY_M2(HW_MOTOR2_TIM->ARR / 2, HW_MOTOR2_TIM->ARR / 2, HW_MOTOR2_TIM->ARR / 2);
 
 	stop_pwm_hw((motor_all_state_t*)&m_motor_2);
 	PHASE_FILTER_ON_M2();
@@ -2713,7 +2713,7 @@ int mcpwm_foc_dc_cal(bool cal_undriven) {
 	float current_sum[3] = {0.0, 0.0, 0.0};
 	float voltage_sum[3] = {0.0, 0.0, 0.0};
 
-	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, TIM1->ARR / 2, TIM1->ARR / 2);
+	TIMER_UPDATE_DUTY_M1(HW_MOTOR1_TIM->ARR / 2, HW_MOTOR1_TIM->ARR / 2, HW_MOTOR1_TIM->ARR / 2);
 
 	stop_pwm_hw((motor_all_state_t*)&m_motor_1);
 	PHASE_FILTER_ON();

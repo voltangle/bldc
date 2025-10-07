@@ -2648,7 +2648,7 @@ static void update_timer_attempt(void) {
 	utils_sys_lock_cnt();
 
 	// Set the next timer settings if an update is far enough away
-	if (!timer_struct.updated && HW_MOTOR1_TIM->CNT > 10 && TIM1->CNT < (TIM1->ARR - 500)) {
+	if (!timer_struct.updated && HW_MOTOR1_TIM->CNT > 10 && HW_MOTOR1_TIM->CNT < (TIM1->ARR - 500)) {
 		// Disable preload register updates
 		HW_MOTOR1_TIM->CR1 |= TIM_CR1_UDIS;
 		HW_MOTOR2_TIM->CR1 |= TIM_CR1_UDIS;

@@ -1977,7 +1977,7 @@ void mc_interface_mc_timer_isr(bool is_second_motor) {
 
 #ifdef HW_USE_BRK
 	// BRK fault code
-	if (TIM_GetFlagStatus(TIM1, TIM_FLAG_Break) != RESET) {
+	if (TIM_GetFlagStatus(HW_MOTOR1_TIM, TIM_FLAG_Break) != RESET) {
 		mc_interface_fault_stop(FAULT_CODE_BRK, is_second_motor, true);
 		// latch the BRK/FAULT pin to low until next MCU reset
 		palSetPadMode(BRK_GPIO, BRK_PIN, PAL_MODE_OUTPUT_PUSHPULL);
@@ -2944,9 +2944,9 @@ static THD_FUNCTION(fault_stop_thread, arg) {
 			// Send to terminal fault logger so that all faults and their conditions
 			// can be printed for debugging.
 			utils_sys_lock_cnt();
-			volatile int val_samp = TIM8->CCR1;
-			volatile int current_samp = TIM1->CCR4;
-			volatile int tim_top = TIM1->ARR;
+			volatile int val_samp = HW_MOTOR2_TIM->CCR1;
+			volatile int current_samp = HW_MOTOR1_TIM->CCR4;
+			volatile int tim_top = HW_MOTOR1_TIM->ARR;
 			utils_sys_unlock_cnt();
 
 			fault_data fdata;
