@@ -29,14 +29,19 @@
 //#define HW_HAS_PHASE_FILTERS
 //#define INVERTED_SHUNT_POLARITY 
 #define HW_SWAP_MOTOR_TIMERS
+#define HW_HAS_NO_CAN
+#define COMM_USE_USB 0
 
 //#define HW_USE_BRK
 
 // Macros
 #define LED_GREEN_GPIO			GPIOC
-#define LED_GREEN_PIN			9
-#define LED_RED_GPIO			GPIOB
-#define LED_RED_PIN				12
+#define LED_GREEN_PIN			4
+#define LED_RED_GPIO			GPIOC
+#define LED_RED_PIN				5
+
+#define POWER_ON_GPIO           GPIOB
+#define POWER_ON_PIN            14
 
 #define LED_GREEN_ON()			palSetPad(LED_GREEN_GPIO, LED_GREEN_PIN)
 #define LED_GREEN_OFF()			palClearPad(LED_GREEN_GPIO, LED_GREEN_PIN)
@@ -84,7 +89,7 @@
 #define ADC_IND_TEMP_MOS_3		7
 #define ADC_IND_TEMP_MOTOR		7
 
-#define ADC_IND_VREFINT			6   //Must be ADC1//WHY DO WE NEED THIS???
+#define ADC_IND_VREFINT			6   // Must be ADC1
 
 // ADC macros and settings
 
@@ -93,33 +98,40 @@
 #define V_REG					3.3
 #endif
 #ifndef VIN_R1
-#define VIN_R1					100000.0
+#define VIN_R1					270000.0
 #endif
 #ifndef VIN_R2
-#define VIN_R2					2700.0
+#define VIN_R2					4300.0
 #endif
 #ifndef CURRENT_AMP_GAIN
-#define CURRENT_AMP_GAIN		(10.55)
+#define CURRENT_AMP_GAIN		(1.554)
 // Dual 0.3 mOhm shunts in parallel with CC6920BSO-50A, calculations show that this
 // is what its supposed to show
 #endif
 
 // Max value the shunt can differentiate is ~350A
 #ifndef CURRENT_SHUNT_RES
-#define CURRENT_SHUNT_RES		(0.0003) 
+#define CURRENT_SHUNT_RES		(0.003) 
 #endif
 
 // Input voltage
 #define GET_INPUT_VOLTAGE()		((V_REG / 4095.0) * (float)ADC_Value[ADC_IND_VIN_SENS] * ((VIN_R1 + VIN_R2) / VIN_R2))
 
 // NTC Termistors
-#define NTC_RES(adc_val)		((4095.0 * 10000.0) / adc_val - 10000.0)
-#define NTC_TEMP(adc_ind)       hwt12t_get_temp()
+#define NTC_T0                  293.15 // Kelvin @ 20C
+#define NTC_B                   3950.0
+// #define NTC_RES(adc_val)		((4095.0 * 10000.0) / adc_val - 10000.0)
+#define NTC_RES(adc_val)		((adc_val * V_REG / 4095) * 10000.0) / (V_REG - (adc_val * V_REG / 4095))
+// #define NTC_TEMP(adc_ind)       (NTC_T0 * NTC_B) / (NTC_T0 * logf(NTC_RES(ADC_Value[adc_ind]) / 50000.0) + NTC_B) - 273.15
+// #define NTC_TEMP(adc_ind)       (1.0 / ((logf(NTC_RES((4095-ADC_Value[adc_ind])) / 50000.0) / NTC_B) + (1.0 / NTC_T0)) - 273.15)
+#define NTC_TEMP(adc_ind)       ((1.0 / ((1.0 / NTC_T0) + ((1.0 / NTC_B) * (logf(NTC_RES(ADC_Value[adc_ind]) / 50000.0))))) - 273.15)
 
-#define NTC_RES_MOTOR(adc_val)	(4700.0 / ((4095.0 / (float)adc_val) - 1.0)) // Motor temp sensor on low side
-#define NTC_TEMP_MOTOR(beta)	(1.0 / ((logf(NTC_RES_MOTOR(ADC_Value[ADC_IND_TEMP_MOTOR]) / 10000.0) / beta) + (1.0 / 298.15)) - 273.15)
+#define NTC_TEMP_MOS1()			NTC_TEMP(ADC_IND_TEMP_MOS)
 
-#define NTC_TEMP_MOS1()			(1.0 / ((logf(NTC_RES((4095-ADC_Value[ADC_IND_TEMP_MOS])) / 10000.0) / 3380.0) + (1.0 / 298.15)) - 273.15)
+#define NTC_RES_MOTOR(adc_val)	NTC_RES(adc_val)
+// #define NTC_TEMP_MOTOR(beta)	NTC_TEMP(ADC_IND_TEMP_MOS)
+#define NTC_TEMP_MOTOR(beta)	NTC_TEMP_MOS1()
+
 
 // Voltage on ADC channel
 #define ADC_VOLTS(ch)			((float)ADC_Value[ch] / 4096.0 * V_REG)
@@ -143,12 +155,12 @@
 #define HW_SPI_PIN_MISO         2
 
 // UART Peripheral
-#define HW_UART_DEV				SD3
-#define HW_UART_GPIO_AF			GPIO_AF_USART3
-#define HW_UART_TX_PORT			GPIOB
-#define HW_UART_TX_PIN			10
-#define HW_UART_RX_PORT			GPIOB
-#define HW_UART_RX_PIN			11
+#define HW_UART_DEV				SD1
+#define HW_UART_GPIO_AF			GPIO_AF_USART1
+#define HW_UART_TX_PORT			GPIOA
+#define HW_UART_TX_PIN			9
+#define HW_UART_RX_PORT			GPIOA
+#define HW_UART_RX_PIN			10
 
 // I2C Peripheral
 #define HW_I2C_DEV				I2CD2

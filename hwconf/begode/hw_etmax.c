@@ -15,6 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     */
 
+#include "hw_etmax.h"
 #include "hw.h"
 
 #include "ch.h"
@@ -49,6 +50,9 @@ void hw_init_gpio(void) {
 			PAL_MODE_OUTPUT_PUSHPULL |
 			PAL_STM32_OSPEED_HIGHEST);
 
+    // Enable power supply
+    palSetPadMode(POWER_ON_GPIO, POWER_ON_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+
 	// GPIOA Configuration: Channel 1 to 3 as alternate function push-pull
 	palSetPadMode(GPIOC, 6, PAL_MODE_ALTERNATE(GPIO_AF_TIM8) |
 			PAL_STM32_OSPEED_HIGHEST |
@@ -63,7 +67,7 @@ void hw_init_gpio(void) {
 	palSetPadMode(GPIOA, 7, PAL_MODE_ALTERNATE(GPIO_AF_TIM8) |
 			PAL_STM32_OSPEED_HIGHEST |
 			PAL_STM32_PUDR_FLOATING);
-	palSetPadMode(GPIOB, 1, PAL_MODE_ALTERNATE(GPIO_AF_TIM8) |
+	palSetPadMode(GPIOB, 0, PAL_MODE_ALTERNATE(GPIO_AF_TIM8) |
 			PAL_STM32_OSPEED_HIGHEST |
 			PAL_STM32_PUDR_FLOATING);
 	palSetPadMode(GPIOB, 1, PAL_MODE_ALTERNATE(GPIO_AF_TIM8) |
@@ -80,36 +84,19 @@ void hw_init_gpio(void) {
 	palSetPadMode(BRK_GPIO, BRK_PIN, PAL_MODE_ALTERNATE(GPIO_AF_TIM1));
 #endif
 
-	// Phase filters
-	palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOC, 14, PAL_MODE_OUTPUT_OPENDRAIN);
-	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_OPENDRAIN);
-	PHASE_FILTER_OFF();
-
 	// AUX pin
-	//AUX_OFF();
+	AUX_OFF();
 	//palSetPadMode(AUX_GPIO, AUX_PIN,
 	//		PAL_MODE_OUTPUT_PUSHPULL |
 	//		PAL_STM32_OSPEED_HIGHEST);
 
 	// ADC Pins
-	palSetPadMode(GPIOA, 0, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 1, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 2, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 3, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 4, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 5, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOA, 6, PAL_MODE_INPUT_ANALOG);
+	palSetPadMode(GPIOA, 0, PAL_MODE_INPUT_ANALOG); // Vbattery
+	palSetPadMode(GPIOA, 4, PAL_MODE_INPUT_ANALOG); // IphaseA
+	palSetPadMode(GPIOA, 5, PAL_MODE_INPUT_ANALOG); // IphaseC
 
-	palSetPadMode(GPIOB, 0, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOB, 1, PAL_MODE_INPUT_ANALOG);
-
-	palSetPadMode(GPIOC, 0, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOC, 1, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOC, 2, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOC, 3, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOC, 4, PAL_MODE_INPUT_ANALOG);
-	palSetPadMode(GPIOC, 5, PAL_MODE_INPUT_ANALOG);
+	palSetPadMode(GPIOC, 0, PAL_MODE_INPUT_ANALOG); // Ibattery
+	palSetPadMode(GPIOC, 1, PAL_MODE_INPUT_ANALOG); // Tdriver
 }
 
 void hw_setup_adc_channels(void) {
@@ -232,22 +219,5 @@ void hw_try_restore_i2c(void) {
 
 		i2cReleaseBus(&HW_I2C_DEV);
 	}
-}
-
-
-float hwt12t_get_temp(void) {
-	volatile float t1 = NTC_TEMP_MOS1();//(1.0 / ((logf(NTC_RES((4095-ADC_Value[ADC_IND_TEMP_MOS])) / 10000.0) / 3380.0) + (1.0 / 298.15)) - 273.15);
-	volatile float t2 = NTC_TEMP_MOS2();//(1.0 / ((logf(NTC_RES((4095-ADC_Value[ADC_IND_TEMP_MOS_2])) / 10000.0) / 3380.0) + (1.0 / 298.15)) - 273.15);
-	volatile float t3 = NTC_TEMP_MOS3();//(1.0 / ((logf(NTC_RES((4095-ADC_Value[ADC_IND_TEMP_MOS_3])) / 10000.0) / 3380.0) + (1.0 / 298.15)) - 273.15);
-	volatile float res = 0.0;
-
-	if (t1 > t2 && t1 > t3) {
-		res = t1;
-	} else if (t2 > t1 && t2 > t3) {
-		res = t2;
-	} else {
-		res = t3;
-	}
-	return res;
 }
 
