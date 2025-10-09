@@ -385,19 +385,19 @@ void main_stop_motor_and_reset(void) {
 #endif
 
 #ifdef HW_HAS_DUAL_MOTORS
-	TIM_SelectOCxM(TIM8, TIM_Channel_1, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM8, TIM_Channel_1, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_1, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_1, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_1, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM8, TIM_Channel_2, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM8, TIM_Channel_2, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_2, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_2, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_2, TIM_CCxN_Disable);
 
-	TIM_SelectOCxM(TIM8, TIM_Channel_3, TIM_ForcedAction_InActive);
-	TIM_CCxCmd(TIM8, TIM_Channel_3, TIM_CCx_Enable);
-	TIM_CCxNCmd(TIM8, TIM_Channel_3, TIM_CCxN_Disable);
+	TIM_SelectOCxM(HW_MOTOR2_TIM, TIM_Channel_3, TIM_ForcedAction_InActive);
+	TIM_CCxCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCx_Enable);
+	TIM_CCxNCmd(HW_MOTOR2_TIM, TIM_Channel_3, TIM_CCxN_Disable);
 
-	TIM_GenerateEvent(TIM8, TIM_EventSource_COM);
+	TIM_GenerateEvent(HW_MOTOR2_TIM, TIM_EventSource_COM);
 
 #ifdef HW_HAS_DRV8313_2
 		ENABLE_BR_2();
