@@ -56,7 +56,7 @@
 //#define AUX_OFF()				palClearPad(AUX_GPIO, AUX_PIN) 
 
 
-#define HW_ADC_CHANNELS			8
+#define HW_ADC_CHANNELS			9
 #define HW_ADC_INJ_CHANNELS		2
 #define HW_ADC_NBR_CONV			3
 
@@ -114,10 +114,9 @@
 // NTC Termistors
 #define NTC_T0                  293.15 // Kelvin @ 20C
 #define NTC_B                   3950.0
-// #define NTC_RES(adc_val)		((4095.0 * 10000.0) / adc_val - 10000.0)
 #define NTC_RES(adc_val)		((adc_val * V_REG / 4095) * 10000.0) / (V_REG - (adc_val * V_REG / 4095))
-// #define NTC_TEMP(adc_ind)       (NTC_T0 * NTC_B) / (NTC_T0 * logf(NTC_RES(ADC_Value[adc_ind]) / 50000.0) + NTC_B) - 273.15
-// #define NTC_TEMP(adc_ind)       (1.0 / ((logf(NTC_RES((4095-ADC_Value[adc_ind])) / 50000.0) / NTC_B) + (1.0 / NTC_T0)) - 273.15)
+// #define NTC_TEMP(adc_ind)       ((1.0 / ((1.0 / NTC_T0) + ((1.0 / NTC_B) * (logf(NTC_RES(ADC_Value[adc_ind]) / 50000.0))))) - 273.15)
+// #define NTC_TEMP(adc_ind)       ADC_Value[ADC_IND_TEMP_MOS]
 #define NTC_TEMP(adc_ind)       ((1.0 / ((1.0 / NTC_T0) + ((1.0 / NTC_B) * (logf(NTC_RES(ADC_Value[adc_ind]) / 50000.0))))) - 273.15)
 
 #define NTC_TEMP_MOS1()			NTC_TEMP(ADC_IND_TEMP_MOS)
@@ -216,7 +215,6 @@
 #endif
 #ifndef MCCONF_L_MAX_VOLTAGE
 #define MCCONF_L_MAX_VOLTAGE			190
-//Set max in to 110V - targetting 24s = 24*4.2 = 100.8 , keep some headroom for the MOS
 #endif
 #ifndef MCCONF_DEFAULT_MOTOR_TYPE
 #define MCCONF_DEFAULT_MOTOR_TYPE		MOTOR_TYPE_FOC
@@ -225,29 +223,26 @@
 #define MCCONF_FOC_F_ZV					30000.0
 #endif
 #ifndef MCCONF_L_MAX_ABS_CURRENT
-#define MCCONF_L_MAX_ABS_CURRENT		550.0	// The maximum absolute current above which a fault is generated
+#define MCCONF_L_MAX_ABS_CURRENT		100.0	// The maximum absolute current above which a fault is generated
 #endif
 #ifndef MCCONF_FOC_SAMPLE_V0_V7
 #define MCCONF_FOC_SAMPLE_V0_V7			false	// Run control loop in both v0 and v7 (requires phase shunts)
 #endif
 #ifndef MCCONF_L_IN_CURRENT_MAX
-#define MCCONF_L_IN_CURRENT_MAX			330.0	// Input current limit in Amperes (Upper)
+#define MCCONF_L_IN_CURRENT_MAX			150.0	// Input current limit in Amperes (Upper)
 #endif
 #ifndef MCCONF_L_IN_CURRENT_MIN
-#define MCCONF_L_IN_CURRENT_MIN			-330.0	// Input current limit in Amperes (Lower)
+#define MCCONF_L_IN_CURRENT_MIN			-150.0	// Input current limit in Amperes (Lower)
 #endif
 
 // Setting limits
-#define HW_LIM_CURRENT			-330.0, 330.0
-#define HW_LIM_CURRENT_IN		-250.0, 250.0
-#define HW_LIM_CURRENT_ABS		0.0, 000.0
-#define HW_LIM_VIN				80.0, 190.0
+#define HW_LIM_CURRENT			-300.0, 300.0
+#define HW_LIM_CURRENT_IN		-160.0, 160.0
+#define HW_LIM_CURRENT_ABS		-340.0, 340.0
+#define HW_LIM_VIN				80.0, 195.0
 #define HW_LIM_ERPM				-200e3, 200e3
 #define HW_LIM_DUTY_MIN			0.0, 0.1
 #define HW_LIM_DUTY_MAX			0.0, 0.98
 #define HW_LIM_TEMP_FET			-40.0, 90.0
 
-// HW-specific functions
-
-float hwt12t_get_temp(void);
 #endif /* HW_ETMAX_ */

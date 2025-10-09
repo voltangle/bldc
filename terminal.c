@@ -194,13 +194,13 @@ __attribute__((section(".text2"))) void terminal_process_string(char *str) {
 		volatile int dir8 = !!(TIM8->CR1 & (1 << 4));
 		chSysUnlock();
 
-		int duty1 = TIM1->CCR1;
-		int duty2 = TIM1->CCR2;
-		int duty3 = TIM1->CCR3;
-		int top = TIM1->ARR;
-		int voltage_samp = TIM8->CCR1;
-		int current1_samp = TIM1->CCR4;
-		int current2_samp = TIM8->CCR2;
+		int duty1 = HW_MOTOR1_TIM->CCR1;
+		int duty2 = HW_MOTOR1_TIM->CCR2;
+		int duty3 = HW_MOTOR1_TIM->CCR3;
+		int top = HW_MOTOR1_TIM->ARR;
+		int voltage_samp = HW_MOTOR2_TIM->CCR1;
+		int current1_samp = HW_MOTOR1_TIM->CCR4;
+		int current2_samp = HW_MOTOR2_TIM->CCR2;
 
 		commands_printf("Tim1 CNT: %i", t1_cnt);
 		commands_printf("Tim8 CNT: %i", t8_cnt);
