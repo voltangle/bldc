@@ -24,10 +24,9 @@
 
 
 // HW properties
-//#define HW_HAS_3_SHUNTS
 #define HW_HAS_PHASE_SHUNTS
-//#define HW_HAS_PHASE_FILTERS
-//#define INVERTED_SHUNT_POLARITY 
+// #define INVERTED_SHUNT_POLARITY 
+#define INVERTED_SHUNT2_POLARITY
 #define HW_SWAP_MOTOR_TIMERS
 #define HW_HAS_NO_CAN
 #define COMM_USE_USB 0
@@ -47,11 +46,6 @@
 #define LED_GREEN_OFF()			palClearPad(LED_GREEN_GPIO, LED_GREEN_PIN)
 #define LED_RED_ON()			palSetPad(LED_RED_GPIO, LED_RED_PIN)
 #define LED_RED_OFF()			palClearPad(LED_RED_GPIO, LED_RED_PIN)
-
-// Phase filter
-#define PHASE_FILTER_OFF()		palSetPad(GPIOC, 13); palSetPad(GPIOC, 14); palSetPad(GPIOC, 15)
-#define PHASE_FILTER_ON()		palClearPad(GPIOC, 13); palClearPad(GPIOC, 14); palClearPad(GPIOC, 15)
-
 
 //#define BRK_GPIO				GPIOB
 //#define BRK_PIN					12

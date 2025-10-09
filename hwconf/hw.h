@@ -346,8 +346,11 @@
 #endif
 
 // Current ADC macros. Override them for custom current measurement functions.
+// NOTE: INVERTED_SHUNTx(_Mx)_POLARITY can coexist with INVERTED_SHUNT_POLARITY,
+// but it has zero effect, as INVERTED_SHUNT_POLARITY triggers every single
+// INVERTED_SHUNTx(_Mx)_POLARITY case
 #ifndef GET_CURRENT1
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT1_POLARITY)
 #define GET_CURRENT1()		(4095.0 - (float)ADC_Value[ADC_IND_CURR1])
 #else
 #define GET_CURRENT1()		((float)ADC_Value[ADC_IND_CURR1])
@@ -355,7 +358,7 @@
 #endif
 
 #ifndef GET_CURRENT2
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT2_POLARITY)
 #define GET_CURRENT2()		(4095.0 - (float)ADC_Value[ADC_IND_CURR2])
 #else
 #define GET_CURRENT2()		((float)ADC_Value[ADC_IND_CURR2])
@@ -365,7 +368,7 @@
 #ifdef HW_HAS_3_SHUNTS
 #ifndef GET_CURRENT3
 #ifdef ADC_IND_CURR3
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT3_POLARITY)
 #define GET_CURRENT3()		(4095.0 - (float)ADC_Value[ADC_IND_CURR3])
 #else
 #define GET_CURRENT3()		((float)ADC_Value[ADC_IND_CURR3])
@@ -384,7 +387,7 @@
 
 #ifndef GET_CURRENT1_M2
 #ifdef ADC_IND_CURR4
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT1_M2_POLARITY)
 #define GET_CURRENT1_M2()	(4095.0 - (float)ADC_Value[ADC_IND_CURR4])
 #else
 #define GET_CURRENT1_M2()	((float)ADC_Value[ADC_IND_CURR4])
@@ -397,7 +400,7 @@
 
 #ifndef GET_CURRENT2_M2
 #ifdef ADC_IND_CURR5
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT2_M2_POLARITY)
 #define GET_CURRENT2_M2()	(4095.0 - (float)ADC_Value[ADC_IND_CURR5])
 #else
 #define GET_CURRENT2_M2()	((float)ADC_Value[ADC_IND_CURR5])
@@ -411,7 +414,7 @@
 #ifdef HW_HAS_3_SHUNTS
 #ifndef GET_CURRENT3_M2
 #ifdef ADC_IND_CURR6
-#ifdef INVERTED_SHUNT_POLARITY
+#if defined(INVERTED_SHUNT_POLARITY) || defined(INVERTED_SHUNT3_M2_POLARITY)
 #define GET_CURRENT3_M2()	(4095.0 - (float)ADC_Value[ADC_IND_CURR6])
 #else
 #define GET_CURRENT3_M2()	((float)ADC_Value[ADC_IND_CURR6])
