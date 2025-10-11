@@ -26,8 +26,11 @@
 // HW properties
 #define HW_HAS_PHASE_SHUNTS
 // #define INVERTED_SHUNT_POLARITY 
-#define INVERTED_SHUNT2_POLARITY
+#define INVERTED_SHUNT1_POLARITY
 #define HW_SWAP_MOTOR_TIMERS
+// #define HW_SHUNT_1_2
+#define PHASE_LP_CONSTANT   0.1 //LP for vd and vq being used to calculate valpha and vbeta.  
+#define HW_HAS_NO_PHASE_SENSE
 #define HW_HAS_NO_CAN
 #define COMM_USE_USB 0
 
@@ -54,7 +57,6 @@
 //#define AUX_PIN				12
 //#define AUX_ON()				palSetPad(AUX_GPIO, AUX_PIN)
 //#define AUX_OFF()				palClearPad(AUX_GPIO, AUX_PIN) 
-
 
 #define HW_ADC_CHANNELS			9
 #define HW_ADC_INJ_CHANNELS		2
@@ -106,6 +108,7 @@
 // Max value the shunt can differentiate is ~350A
 #ifndef CURRENT_SHUNT_RES
 #define CURRENT_SHUNT_RES		(0.003) 
+// #define CURRENT_SHUNT_RES       (0.001)
 #endif
 
 // Input voltage
@@ -207,26 +210,26 @@
 #define READ_HALL3()			palReadPad(HW_HALL_ENC_GPIO3, HW_HALL_ENC_PIN3)
 
 // Override dead time. See the stm32f4 reference manual for calculating this value.
-#define HW_DEAD_TIME_NSEC		350.0
+#define HW_DEAD_TIME_NSEC		1200.0
 
 // Default setting overrides
 #ifndef MCCONF_L_MIN_VOLTAGE
-#define MCCONF_L_MIN_VOLTAGE			80.0 //Minimum input voltage
+#define MCCONF_L_MIN_VOLTAGE			116.0
 #endif
 #ifndef MCCONF_L_MAX_VOLTAGE
-#define MCCONF_L_MAX_VOLTAGE			190
+#define MCCONF_L_MAX_VOLTAGE			190.0
 #endif
 #ifndef MCCONF_DEFAULT_MOTOR_TYPE
 #define MCCONF_DEFAULT_MOTOR_TYPE		MOTOR_TYPE_FOC
 #endif
 #ifndef MCCONF_FOC_F_ZV
-#define MCCONF_FOC_F_ZV					30000.0
+#define MCCONF_FOC_F_ZV					20000.0
 #endif
 #ifndef MCCONF_L_MAX_ABS_CURRENT
 #define MCCONF_L_MAX_ABS_CURRENT		100.0	// The maximum absolute current above which a fault is generated
 #endif
 #ifndef MCCONF_FOC_SAMPLE_V0_V7
-#define MCCONF_FOC_SAMPLE_V0_V7			false	// Run control loop in both v0 and v7 (requires phase shunts)
+#define MCCONF_FOC_SAMPLE_V0_V7			true	// Run control loop in both v0 and v7 (requires phase shunts)
 #endif
 #ifndef MCCONF_L_IN_CURRENT_MAX
 #define MCCONF_L_IN_CURRENT_MAX			150.0	// Input current limit in Amperes (Upper)
@@ -239,7 +242,7 @@
 #define HW_LIM_CURRENT			-300.0, 300.0
 #define HW_LIM_CURRENT_IN		-160.0, 160.0
 #define HW_LIM_CURRENT_ABS		-340.0, 340.0
-#define HW_LIM_VIN				80.0, 195.0
+#define HW_LIM_VIN				60.0, 195.0 // hardware shuts off at 60V, MOSFET limit is at 200V but try to not reach it as much
 #define HW_LIM_ERPM				-200e3, 200e3
 #define HW_LIM_DUTY_MIN			0.0, 0.1
 #define HW_LIM_DUTY_MAX			0.0, 0.98
